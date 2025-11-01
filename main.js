@@ -89,11 +89,17 @@ function setupEventListeners() {
   document.getElementById('manualSearch').addEventListener('input', handleManualSearch);
   document.getElementById('continueBtn').addEventListener('click', handleContinue);
   document.getElementById('searchBtn').addEventListener('click', () => showModal('searchModal'));
-  document.getElementById('closeSearchModal').addEventListener('click', () => hideModal('searchModal'));
-  document.getElementById('closeInfoModal').addEventListener('click', () => hideModal('infoModal'));
-  document.getElementById('closeStationModal').addEventListener('click', () => hideModal('stationModal'));
+  const closeSearch = document.getElementById('closeSearchModal');
+  if (closeSearch) closeSearch.addEventListener('click', () => hideModal('searchModal'));
+  const closeInfo = document.getElementById('closeInfoModal');
+  if (closeInfo) closeInfo.addEventListener('click', () => hideModal('infoModal'));
+  const closeStation = document.getElementById('closeStationModal');
+  if (closeStation) closeStation.addEventListener('click', () => hideModal('stationModal'));
   document.getElementById('stationSearch').addEventListener('input', handleStationSearch);
-  document.getElementById('backBtn').addEventListener('click', () => {
+
+  // back button exists inside the live tracking view
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.addEventListener('click', () => {
     showView('busListView');
   });
 }
@@ -203,11 +209,17 @@ function loadBusList() {
       </div>
     `;
   } else {
-    busList.innerHTML = filteredBuses.map(bus => createBusCard(bus)).join('');
+    // Use the global index from mockData.buses for stable IDs
+    busList.innerHTML = filteredBuses.map(bus => {
+      const globalIndex = mockData.buses.indexOf(bus);
+      return createBusCard(bus, globalIndex);
+    }).join('');
 
-    filteredBuses.forEach((bus, index) => {
-      const viewInfoBtn = document.getElementById(`viewInfo-${index}`);
-      const trackLiveBtn = document.getElementById(`trackLive-${index}`);
+    // Attach listeners using the same global indexes
+    filteredBuses.forEach(bus => {
+      const globalIndex = mockData.buses.indexOf(bus);
+      const viewInfoBtn = document.getElementById(`viewInfo-${globalIndex}`);
+      const trackLiveBtn = document.getElementById(`trackLive-${globalIndex}`);
 
       if (viewInfoBtn) {
         viewInfoBtn.addEventListener('click', () => showBusInfo(bus));
@@ -221,9 +233,8 @@ function loadBusList() {
   showView('busListView');
 }
 
-function createBusCard(bus) {
-  const index = mockData.buses.indexOf(bus);
-  const crowdClass = bus.crowd.toLowerCase().replace(' ', '-');
+function createBusCard(bus, index) {
+  const crowdClass = bus.crowd.toLowerCase().replace(/\s+/g, '-');
 
   return `
     <div class="bus-card">
@@ -250,7 +261,7 @@ function showBusInfo(bus) {
 
   title.textContent = `Bus ${bus.number} Information`;
 
-  const crowdClass = bus.crowd.toLowerCase().replace(' ', '-');
+  const crowdClass = bus.crowd.toLowerCase().replace(/\s+/g, '-');
 
   content.innerHTML = `
     <div class="info-detail">
@@ -300,7 +311,7 @@ function showLiveTracking(bus) {
   speedDisplay.textContent = bus.speed;
   nextStopDisplay.textContent = bus.nextStop;
 
-  const crowdClass = bus.crowd.toLowerCase().replace(' ', '-');
+  const crowdClass = bus.crowd.toLowerCase().replace(/\s+/g, '-');
   crowdDisplay.className = `badge ${crowdClass}`;
   crowdDisplay.textContent = bus.crowd;
 
@@ -314,11 +325,13 @@ function renderRouteMap(bus) {
   const routeMap = document.getElementById('routeMap');
   const currentStation = mockData.stop.split(' (')[0];
 
+  // Compute bus position index (may be fractional if "between X and Y")
   const busPositionIndex = getBusPositionIndex(bus);
 
   const stationsHTML = bus.route.map((station, index) => {
     const isCurrent = station === currentStation;
-    const isBusPosition = index === busPositionIndex;
+    // if busPositionIndex is fractional, mark near station if within 0.5
+    const isBusPosition = Math.abs(index - busPositionIndex) < 0.5;
 
     return `
       <div class="station-marker">
@@ -337,27 +350,59 @@ function renderRouteMap(bus) {
     </div>
   `;
 
+  // Use event.currentTarget to avoid clicks on inner icon missing dataset
   routeMap.querySelectorAll('.station-dot').forEach(dot => {
     dot.addEventListener('click', (e) => {
-      const stationName = e.target.dataset.station;
+      const stationName = e.currentTarget.dataset.station;
       showStationInfo(stationName);
     });
   });
 }
 
 function getBusPositionIndex(bus) {
-  const position = bus.position.toLowerCase();
+  const position = (bus.position || '').toLowerCase();
 
-  if (position.includes('leaving') || position.includes('between')) {
+  // If "between X and Y", try to extract X and find its index
+  if (position.includes('between')) {
+    // attempt to parse "between X and Y"
+    const betweenMatch = position.match(/between\s+(.+?)\s+(?:and|&)\s+(.+)/i);
+    if (betweenMatch) {
+      const a = betweenMatch[1].trim();
+      const b = betweenMatch[2].trim();
+      const idxA = bus.route.findIndex(r => r.toLowerCase().includes(a));
+      const idxB = bus.route.findIndex(r => r.toLowerCase().includes(b));
+      if (idxA !== -1 && idxB !== -1) {
+        return (idxA + idxB) / 2; // fractional position between two stops
+      }
+      if (idxA !== -1) return idxA + 0.5;
+      if (idxB !== -1) return Math.max(0, idxB - 0.5);
+    }
+    // fallback: mark near first matched station
+    for (let i = 0; i < bus.route.length; i++) {
+      if (position.includes(bus.route[i].toLowerCase())) {
+        return i + 0.5;
+      }
+    }
     return 0.5;
   }
 
+  // If "leaving X" -> mark near X (slightly after)
+  if (position.includes('leaving')) {
+    for (let i = 0; i < bus.route.length; i++) {
+      if (position.includes(bus.route[i].toLowerCase())) {
+        return i + 0.2;
+      }
+    }
+  }
+
+  // exact match to station
   for (let i = 0; i < bus.route.length; i++) {
     if (position.includes(bus.route[i].toLowerCase())) {
       return i;
     }
   }
 
+  // default to first stop
   return 0;
 }
 
@@ -386,11 +431,13 @@ function showStationInfo(stationName) {
 
 function showModal(modalId) {
   const modal = document.getElementById(modalId);
+  if (!modal) return;
   modal.classList.remove('hidden');
 }
 
 function hideModal(modalId) {
   const modal = document.getElementById(modalId);
+  if (!modal) return;
   modal.classList.add('hidden');
 }
 
@@ -398,7 +445,8 @@ function showView(viewId) {
   document.querySelectorAll('.view').forEach(view => {
     view.classList.add('hidden');
   });
-  document.getElementById(viewId).classList.remove('hidden');
+  const viewEl = document.getElementById(viewId);
+  if (viewEl) viewEl.classList.remove('hidden');
   currentView = viewId;
 }
 

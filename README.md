@@ -74,7 +74,3 @@ Impact
 * **Operators:** Smart scheduling, reduced empty runs
 * **Government:** Better planning, less congestion, sustainability
 
----
-
-**Hackathon:** Smart India Hackathon 2025 – SIH25013
-**Team:** MargaSanchār | “A city is truly smart when everyone can move smartly — online or offline.”

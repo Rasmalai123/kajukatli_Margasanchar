@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="stylesheet" href="/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MargaSanchār – Smart Public Transport Tracking</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>🚌 MargaSanchār</h1>
+        <button id="searchBtn" class="icon-btn">🔍</button>
+      </header>
+
+      <main id="mainContent">
+        <div id="busListView" class="view">
+          <h2 id="routeTitle">Select your destination</h2>
+          <div id="busList" class="bus-list"></div>
+        </div>
+
+        <div id="liveTrackingView" class="view hidden">
+          <button id="backBtn" class="back-btn">← Back to Bus List</button>
+          <h2 id="trackingTitle">Live Tracking</h2>
+
+          <div class="tracking-container">
+            <div class="map-container">
+              <div id="routeMap" class="route-map"></div>
+            </div>
+
+            <div class="info-panel">
+              <div class="info-item">
+                <span class="label">ETA:</span>
+                <span id="etaDisplay" class="value large">--</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Speed:</span>
+                <span id="speedDisplay" class="value">--</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Next Stop:</span>
+                <span id="nextStopDisplay" class="value">--</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Crowd Level:</span>
+                <span id="crowdDisplay" class="badge">--</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Status:</span>
+                <span id="statusDisplay" class="value">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="welcomeModal" class="modal">
+      <div class="modal-content">
+        <h2>Welcome to MargaSanchār</h2>
+        <p class="location-info">📍 You are at <strong>Main Bazaar (Stop 102)</strong></p>
+
+        <div class="form-group">
+          <label for="directionSelect">Which direction are you going?</label>
+          <select id="directionSelect">
+            <option value="">-- Select Direction --</option>
+          </select>
+        </div>
+
+        <div class="divider">
+          <span>OR</span>
+        </div>
+
+        <div class="form-group">
+          <label for="manualSearch">Search manually for your station</label>
+          <input type="text" id="manualSearch" placeholder="Type station name..." />
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <button id="continueBtn" class="primary-btn" disabled>Continue</button>
+      </div>
+    </div>
+
+    <div id="searchModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Search Station</h2>
+          <button class="close-btn" id="closeSearchModal">✕</button>
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="stationSearch" placeholder="Type station name..." />
+          <div id="stationSearchResults" class="search-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="infoModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="infoModalTitle">Bus Information</h2>
+          <button class="close-btn" id="closeInfoModal">✕</button>
+        </div>
+
+        <div id="infoModalContent" class="info-modal-content"></div>
+      </div>
+    </div>
+
+    <div id="stationModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="stationModalTitle">Station Information</h2>
+          <button class="close-btn" id="closeStationModal">✕</button>
+        </div>
+
+        <div id="stationModalContent" class="station-modal-content"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

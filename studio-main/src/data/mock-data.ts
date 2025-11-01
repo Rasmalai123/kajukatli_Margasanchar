@@ -1,0 +1,67 @@
+import type { Bus, Station } from '@/types';
+
+export const initialBuses: Bus[] = [
+  {
+    id: 'BUS101',
+    route: 'A1',
+    lat: 19.1,
+    lon: 73.4,
+    eta: '5 min',
+    crowd: 'Medium',
+    status: 'On Time',
+    speed: 45,
+    lastSeen: '1 min ago',
+  },
+  {
+    id: 'BUS102',
+    route: 'B2',
+    lat: 19.2,
+    lon: 73.45,
+    eta: '8 min',
+    crowd: 'High',
+    status: 'Delayed',
+    speed: 30,
+    lastSeen: '3 min ago',
+  },
+  {
+    id: 'BUS103',
+    route: 'A1',
+    lat: 19.15,
+    lon: 73.35,
+    eta: '12 min',
+    crowd: 'Low',
+    status: 'On Time',
+    speed: 50,
+    lastSeen: '2 min ago',
+  },
+  {
+    id: 'BUS104',
+    route: 'C3',
+    lat: 19.05,
+    lon: 73.5,
+    eta: '20 min',
+    crowd: 'Medium',
+    status: 'On Time',
+    speed: 40,
+    lastSeen: '5 min ago',
+  },
+  {
+    id: 'BUS105',
+    route: 'B2',
+    lat: 19.25,
+    lon: 73.48,
+    eta: '15 min',
+    crowd: 'Low',
+    status: 'Under Maintenance',
+    speed: 0,
+    lastSeen: '30 min ago',
+  },
+];
+
+export const stations: Station[] = [
+  { id: 'STOP001', name: 'Main Bazaar' },
+  { id: 'STOP002', name: 'City Center' },
+  { id: 'STOP003', name: 'Railway Station' },
+  { id: 'STOP004', name: 'General Hospital' },
+  { id: 'STOP005', name: 'Tech Park' },
+];
